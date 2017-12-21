@@ -170,6 +170,11 @@ def get_files():
 
     return files
 
+
+def secure_cookie():
+    """Return true if cookie should have secure attribute"""
+    return request.environ['wsgi.url_scheme'] == 'https'
+
 def json_safe(string, content_type='application/octet-stream'):
     """Returns JSON-safe version of `string`.
 

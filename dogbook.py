@@ -12,7 +12,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_mail import Message, Mail
 from getmyip import Getmyip
-from helpers import get_headers, get_dict
+from helpers import get_headers, get_dict, secure_cookie
 # from .helpers import get_headers, status_code, get_dict, get_request_range, check_basic_auth, check_digest_auth, \
 #     secure_cookie, H, ROBOT_TXT, ANGRY_ASCII, parse_multi_value_header, next_stale_after_value, \
 #     digest_challenge_response
@@ -53,14 +53,14 @@ app.config['MAIL_PORT'] = 25
 app.config['MAIL_USE_TLS'] = True
 # app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 # app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_USERNAME'] = '18112619045@163.com'
-app.config['MAIL_PASSWORD'] = 'Admin123'
+app.config['MAIL_USERNAME'] = '1811261904@163.com'
+app.config['MAIL_PASSWORD'] = 'hehe123'
 
 app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
-app.config['FLASKY_MAIL_SENDER'] = '18112619045@163.com'
+app.config['FLASKY_MAIL_SENDER'] = '1811261904@163.com'
 
 # app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
-app.config['FLASKY_ADMIN'] = 'tonystark@aispeech.com'
+app.config['FLASKY_ADMIN'] = 'tonystar@aispeech.com'
 
 # print(app.config['SQLALCHEMY_DATABASE_URI'])
 manager = Manager(app)
@@ -144,6 +144,7 @@ def view_useragent():
     return jsonify({'user-agent': headers['user-agent']})
 
 
+
 @app.route('/headers')
 def view_headers():
     """Returns HTTP HEADERS."""
@@ -171,8 +172,39 @@ def view_cookies(hide_env=True):
                 pass
 
     return jsonify(cookies=cookies)
-# @app.route('/cookies/set')
-# def set_cookies():
+
+@app.route('/cookies/set/<name>/<value>')
+def set_cookie(name, value):
+    r = app.make_response(redirect(url_for('view_cookies')))
+    r.set_cookie(key=name, value=value, secure=secure_cookie())
+    return  r
+
+@app.route('/cookies/set')
+def set_cookies():
+    """Sets cookie(s) as provided by the query string and redirects to cookie list."""
+
+    cookies = dict(request.args.items())
+    r = app.make_response(redirect(url_for('view_cookies')))
+    for key, value in cookies.items():
+        r.set_cookie(key=key, value=value, secure=secure_cookie())
+
+    return r
+
+@app.route('/delete/cookies')
+def delete_cookies():
+    cookies = dict(request.args.items())
+    r=app.make_response(redirect(url_for('view_cookies')))
+    for key, value in cookies.items():
+        r.delete_cookie(key=key)
+
+    return r
+
+@app.route('/xml')
+def view_xml():
+    # return render_template('sample.xml')
+    response = make_response(render_template('sample.xml'))
+    response.headers['Content-Type'] = "application/xml"
+    return  response
 
 @app.errorhandler(404)
 def page_not_found(e):
